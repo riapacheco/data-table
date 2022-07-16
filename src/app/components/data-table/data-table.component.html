@@ -13,7 +13,7 @@
 <table>
   <cdk-virtual-scroll-viewport [itemSize]="itemSize" [style.height]="viewportHeightPx + 'px' ">
     <tr
-      *ngFor="let crypto of cryptocurrencies"
+      *cdkVirtualFor="let crypto of cryptocurrencies | filterAll:searchText"
       class="table-row data">
       <td>
         {{ crypto.symbol | uppercase }}

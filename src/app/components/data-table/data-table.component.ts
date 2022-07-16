@@ -10,6 +10,8 @@ import { Component, OnInit } from '@angular/core';
 export class DataTableComponent implements OnInit {
   cryptocurrencies: any = (data as any).default;
 
+  searchText = '';    // ⬅️ filterAll pipe
+
   /* ------------------------ VIRTUAL SCROLL PROPERTIES ----------------------- */
   itemSize = '2.5rem';
   viewportHeightPx = 500;

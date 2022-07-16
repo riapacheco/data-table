@@ -383,4 +383,70 @@ And apply them to the wrapping selector in the template:
   </cdk-virtual-scroll-viewport>
 </table>
 ```
-I realize that having a local file with THAT much data might still reflect performance issues. But, it ain't too bad for what it is:
+
+And to tell viewport what data it's reading, we'll replace our `*ngFor="let crypto of cryptocurrencies"` with `*cdkVirtualFor="let crypto of cryptocurrencies"`. Now when running the app, we know that it only renders what's been scrolled into the viewport!
+
+![Virtual Scroll](https://ik.imagekit.io/fuc9k9ckt2b/Blog_Post_Images/Dev_to/VirtualScroll_dfsQgDqXD.gif?ik-sdk-version=javascript-1.4.3&updatedAt=1658008855191)
+
+---
+
+# Adding Search Capabilities with a Filter All Pipe
+You're likely familiar with Angular's `pipe` feature. If not, it's a handy way to transform data directly within template expressions. As an example, when we grabbed the `symbol` values from our data source earlier, we added `| uppercase` so that every instance it rendered (`{{ crypto.symbol | uppercase }}`) the string would be capitalized. However, we can also build our own, which is how we're going to add search capabilities to our table. Read more about pipes in Angular's official [documentation](https://angular.io/guide/pipes).
+
+## Generate New Pipe and Apply Logic
+To start, run the following in your terminal to generate a new pipe:
+```bash
+ng generate pipe pipes/filter-all
+```
+
+This generates a new `pipes` filter that contains a `filter-all.pipe.ts` file. In that file, add the following: 
+```typescript
+export class FilterAllPipe implements PipeTransform {
+
+  transform(value: any, searchText: any): any {
+    if (!searchText) { return value; }
+    return value.filter((data: any) => this.matchValue(data, searchText));
+  }
+
+  matchValue(data: any, value: any) {
+    return Object.keys(data).map((key) => {
+      return new RegExp(value, 'gi').test(data[key]);
+    }).some(result => result);
+  }
+}
+```
+
+There's a lot going on here, but basically it accepts a `value` of any kind (our data) and `searchText` for us to apply to that data with a `filter()`. The filter calls a `matchValue()` function that returns the data we need by mapping through its `Object.keys()`, returning an instantiated regular expression which tests to see if the match we're looking for exists with `.some()`. To understand this more (in case I butchered it), ask the guy who posted this snippet on Stack Overflow: [Daniel Caldera](https://stackoverflow.com/users/8588193/daniel-caldera) ;) [big shoutout!]
+
+Now we can add this to our `*cdkVirtualFor` directive's expression like this:
+```html
+<!--data-table.component.html-->
+<!-- ... other code from earlier -->
+<!-- ------------------------------ DATA ROWS ------------------------------ -->
+<table>
+  <cdk-virtual-scroll-viewport [itemSize]="itemSize" [style.height]="viewportHeightPx + 'px' ">
+    <tr
+      *cdkVirtualFor="let crypto of cryptocurrencies | filterAll:searchText"
+      class="table-row data">
+      <td>
+
+<!-- more code down here -->
+```
+And add an empty `string` value to the `searchText` variable inside the component like this:
+```typescript
+// data-table.component.ts
+
+// ... other code
+export class DataTableComponent implements OnInit {
+  cryptocurrencies: any = (data as any).default;
+
+  searchText = '';    // ⬅️ filterAll pipe
+
+// ... more code
+```
+To test if this works, populate the `searchText` variable with a value that exists in the dataset, and it should return that value only. Try out `searchText = 'BNBBTC';` and see what renders when you run your app locally.
+
+## Add Two-Way Bounded Input Field
+
+
+
