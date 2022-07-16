@@ -1,20 +1,30 @@
-**Searchable / Sortable Table in Angular (No Material or MatSort) with Useful Directives, JS Methods, SCSS, and Virtual Scrolling**
+**Searchable Table in Angular (No Material) with Useful Directives, JS Methods, SCSS, and Virtual Scrolling**
+
+If you've taken on the use-case of a searchable or sortable data table in Angular, that avoids the restrictive styles of `@angular/material` by using the `cdkTable` under it, you've probably pulled out your hair as much as I have in frustration. So, here's a way to create your own data table in Angular _without_ `MatTable` OR `cdkTable` that's searchable, gorgeous, and can be configured (in terms of _both_ data and style adjustments) from the component itself using some of Angular's most useful lower-level features like `[style]` and virtual scrolling. You can also make it completely reusable by other parent components!
+
+> Note: you can add additional sorting capabilities by using JS' `Array.sort()` method; but it won't be covered here. You're likely set to figure it out easily, once you build the data outlined in this article though.
+---
 
 [toc]
+
+---
 
 # Create the App
 
 ```bash
+# Terminal
 ng new custom-table-demo --skip tests
 ```
 
 When prompted:
 
 ```bash
+# Terminal Response
 ? Would you like to add Angular routing? (y/N) N
 ```
 
 ```bash
+# Terminal Response
 ? Which stylesheet format would you like to use?
   CSS
 ❯ SCSS   [ https://sass-lang.com/documentation/syntax#scss                ]
@@ -28,12 +38,14 @@ When prompted:
 To keep this post high-level, we'll borrow my `@riapacheco/yutes` package's _utility_ classes (get it?) and access a seasonal stylesheet for colors only. We'll shape the table from scratch and add critical functionality without touching any other external libraries. This is likely a very strange concept to any React devs that might be reading this. ;)
 
 ```bash
+# Terminal
 npm install @riapacheco/yutes
 ```
 
 And in your `styles.scss` file, add the following:
 
 ```scss
+// styles.scss
 @import "~@riapacheco/yutes/main.scss"; // Strips webkit / default browser styles
 @import "~@riapacheco/yutes/season/two.scss"; // Access colors
 
@@ -55,6 +67,8 @@ body {
 Now we'll add the `CommonModule` to access directives. Add the following to your `app.module.ts` file:
 
 ```typescript
+// app.module.ts
+
 import { AppComponent } from "./app.component";
 import { BrowserModule } from "@angular/platform-browser";
 // Add this ⤵️
@@ -147,6 +161,8 @@ export class DataTableComponent implements OnInit {
 ```
 
 > Note: this is a great way to make an "instant" blog if you ever wanted to do that
+
+---
 
 # Create and Structure the Table
 Now we can create the actual table, and in a way that dynamically accepts the data we just imported. First, add the following to your template:
@@ -302,7 +318,88 @@ Now run your app, and check it out!
 
 ![header added to table](https://firebasestorage.googleapis.com/v0/b/riapi-65069.appspot.com/o/blog%2FScreen%20Shot%202022-07-14%20at%2010.15.26%20PM.png?alt=media&token=fce9d298-4747-488d-be95-30413cf4cc38)
 
-# Performance-Improving Scroll Windows
+---
+
+# Component-Configurable Columns
+If you remember from earlier, we made sure to add two values to each cell: `flex-grow:1` and `flex-shrink:1`. This means that each cell will grow or shrink, based on any stationary elements around it. 
+
+To effectively add a width to any one (or multiple) columns, we then simply need to add a `flex-basis` property to it with a value that accepts pretty much any measurement from `%` to `px` to `rem`. (though I'd advise on `%`). 
+
+## Add Flex-Basis Values to the Component
+Again, we're going to take advantage of how Angular binds data to a component with its `[style.<property>]` feature.
+
+First, let's add variables that this can bind to from the component itself (further, this is how I usually add configuration for reusable components, where there's an `@Input()` decorator prefixed to this object.. but that's for another time):
+```typescript
+// data-table.component.ts
+
+// .. other code
+
+export class DataTableComponent implements OnInit {
+  cryptocurrencies: any = (data as any).default;
+
+  searchText = '';   
+
+  /* ------------------------ VIRTUAL SCROLL PROPERTIES ----------------------- */
+  itemSize = '2.5rem';
+  viewportHeightPx = 500;
+
+
+  //  ⤵️ add this
+  /* ------------------------------ COLUMN WIDTHS ----------------------------- */
+  config: any = {
+    columnWidth: {
+      _1: 'auto',
+      _2: 'auto',
+      _3: 'auto',
+      _4: 'auto',
+      _5: 'auto',
+      _6: 'auto',
+    }
+  }
+
+  // .. other code
+}
+
+```
+As with any object, you can access values with `.<key>`. So, to access the `'auto'` string we stored here, we simply need to reference it in the template as `config.columnWidth._1`. I personally like to use text that makes sense in plain english to help others understand what's going on right away.
+
+## Bind the Data with [style.flex-basis]
+Now we can add the these values to the template and any adjustments we want to make in the future can be done by changing that `config` variable in the component.
+
+Add the `[style.flex-basis]` directive to the template like this:
+```html
+<!--data-table.component.html-->
+<!-- ----------------------------- HEADER ROW ------------------------------ -->
+<tr class="table-row header">
+  <!-- ⤵️ add this -->
+  <th [style.flex-basis]="config.columnWidth._1">Symbol</th>
+  <th [style.flex-basis]="config.columnWidth._2">Ask Price</th>
+  <th [style.flex-basis]="config.columnWidth._3">Count</th>
+  <th [style.flex-basis]="config.columnWidth._4">Bid Price</th>
+  <th [style.flex-basis]="config.columnWidth._5">Low Price</th>
+  <th [style.flex-basis]="config.columnWidth._6">High Price</th>
+</tr>
+<!-- ------------------------------ DATA ROWS ------------------------------ -->
+<table>
+  <tr
+    *ngFor="let crypto of cryptocurrencies"
+    class="table-row data">
+
+    <!-- ⤵️ and add this -->
+    <td [style.flex-basis]="config.columnWidth._1">
+      {{ crypto.symbol | uppercase }}
+    </td>
+    <td [style.flex-basis]="config.columnWidth._2">
+      {{ crypto.askPrice }}
+    </td>
+    <!-- continute adding them to each column after this -->
+```
+
+Change the value of `config.columnWidth._1` to `'50%'` and see what happens!
+
+---
+
+# Improving Performance with Virtual Scrolling
 One core tool we'll pull from Angular's CDK is is it's `virtual scroll` viewport. This creates a height-restricted view that only renders data that's visible in the viewport, which drastically improves performance.
 Import the CDK package from Angular by running the following in your terminal:
 ```bash
@@ -446,7 +543,75 @@ export class DataTableComponent implements OnInit {
 ```
 To test if this works, populate the `searchText` variable with a value that exists in the dataset, and it should return that value only. Try out `searchText = 'BNBBTC';` and see what renders when you run your app locally.
 
-## Add Two-Way Bounded Input Field
+## Add a Two-Way Bounded Input Field
+Instead of manually assigning values to `searchText` through the component itself. We can two-way bind an input field with Angular's `[(ngModel)]` feature. This creates a 2-way door that both accepts values from the template [`.html` file] to the component [`.ts` file] and pushes the value it receives back to the template _simultaneously_. To enable this feature, add the `FormsModule` to your `app.module.ts` file like this:
+```typescript
+// app.module.ts
 
+// Import this module ⤵️ 
+import { FormsModule } from '@angular/forms';
 
+@NgModule({
+  declarations: [
+    // .. other declarations
+  ],
+  imports: [
+    BrowserModule,
+    CommonModule,
+    ScrollingModule,
+    // ⤵️  add this
+    FormsModule,
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
 
+We'll add some quick styling by adding the following to the **bottom** of the `data-table.component.scss` stylesheet:
+
+```scss
+// data-table.component.scss
+
+// ... everything we added earlier
+
+/* -------------------------------- CONTROLS -------------------------------- */
+// SEARCH FIELD
+.form-group {
+  max-width: 180px;                   // overrides @riapacheco/yutes width (designed to fill any wrapper with width: 100%)
+  margin-bottom: 1rem;
+}
+.search-input {                       // matches the style to our view
+  background-color: $midnight-dark;
+  color: $steel-regular;
+  border-radius: 30px;
+  padding-left: 1.5rem;
+}
+.search-input::placeholder {          // changes color of placeholder text
+  color: $soot-grey-dark;
+}
+```
+
+Now you can add the new input field **above** the table like this:
+```html
+<!--data-table.component.html-->
+
+<!-- ⤵️  add Search field-->
+<div class="form-group">
+  <!--Notice the new [(ngModel)] that references the `searchText` variable-->
+  <input
+    [(ngModel)]="searchText"
+    placeholder="Search"
+    class="search-input"
+    type="text">
+</div>
+
+<!-- ----------------------------- HEADER ROW ------------------------------ -->
+<tr class="table-row header">
+```
+# Result
+And here it is. You've created your own resizeable data-table (that can handle rendering a lot of data) with a searchable input field and configurable columns!
+
+![search-friendly table](https://ik.imagekit.io/fuc9k9ckt2b/Blog_Post_Images/Dev_to/tr:q-100/searchFriendlyTable_8l93WzEbf.gif?ik-sdk-version=javascript-1.4.3&updatedAt=1658014718124)
+
+Take it a step further and have any parent access and use this child component by learning about it [here](https://dev.to/riapacheco/parent-child-component-communication-with-angular-and-vanilla-js-1pae).

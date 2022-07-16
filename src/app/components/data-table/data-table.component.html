@@ -1,12 +1,21 @@
 
+<!--Search Field-->
+<div class="form-group">
+  <input
+    [(ngModel)]="searchText"
+    placeholder="Search"
+    class="search-input"
+    type="text">
+</div>
+
 <!-- ----------------------------- HEADER ROW ------------------------------ -->
 <tr class="table-row header">
-  <th>Symbol</th>
-  <th>Ask Price</th>
-  <th>Count</th>
-  <th>Bid Price</th>
-  <th>Low Price</th>
-  <th>High Price</th>
+  <th [style.flex-basis]="config.columnWidth._1">Symbol</th>
+  <th [style.flex-basis]="config.columnWidth._2">Ask Price</th>
+  <th [style.flex-basis]="config.columnWidth._3">Count</th>
+  <th [style.flex-basis]="config.columnWidth._4">Bid Price</th>
+  <th [style.flex-basis]="config.columnWidth._5">Low Price</th>
+  <th [style.flex-basis]="config.columnWidth._6">High Price</th>
 </tr>
 
 <!-- ------------------------------ DATA ROWS ------------------------------ -->
@@ -15,22 +24,22 @@
     <tr
       *cdkVirtualFor="let crypto of cryptocurrencies | filterAll:searchText"
       class="table-row data">
-      <td>
+      <td [style.flex-basis]="config.columnWidth._1">
         {{ crypto.symbol | uppercase }}
       </td>
-      <td>
+      <td [style.flex-basis]="config.columnWidth._2">
         {{ crypto.askPrice }}
       </td>
-      <td>
+      <td [style.flex-basis]="config.columnWidth._3">
         {{ crypto.count }}
       </td>
-      <td>
+      <td [style.flex-basis]="config.columnWidth._4">
         {{ crypto.bidPrice }}
       </td>
-      <td>
+      <td [style.flex-basis]="config.columnWidth._5">
         {{ crypto.lowPrice}}
       </td>
-      <td>
+      <td [style.flex-basis]="config.columnWidth._6">
         {{ crypto.highPrice}}
       </td>
     </tr>

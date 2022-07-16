@@ -29,7 +29,6 @@ tr {
     &:last-child { margin-right: none; }      // Removes right margin from very right column
   }
 }
-
 /* --------------------------- HEADER ROW STYLING --------------------------- */
 .table-row.header {
   background-color: $midnight-dark;   // Adds a nice darker background
@@ -47,4 +46,19 @@ tr {
   &:nth-child(even) {                   // Adds BG color to every other CHILD element
     background-color: $gunmetal-dark;
   }
+}
+/* -------------------------------- CONTROLS -------------------------------- */
+// SEARCH FIELD
+.form-group {
+  max-width: 180px;                   // overrides @riapacheco/yutes width (designed to fill any wrapper with width: 100%)
+  margin-bottom: 1rem;
+}
+.search-input {                       // matches the style to our view
+  background-color: $midnight-dark;
+  color: $steel-regular;
+  border-radius: 30px;
+  padding-left: 1.5rem;
+}
+.search-input::placeholder {          // changes color of placeholder text
+  color: $soot-grey-dark;
 }
