@@ -108,7 +108,7 @@ When you run `ng serve` this should appear in your browser:
 Since we want the table to handle a **lot** of data, we'll store some mock data in a local `json` file and import it into our component as though it were an external data source call.
 
 ### Add a Mock Data File and Access it with TypeScript's resolveJsonModule
-1. Create a file called `data.json` in your main `app` folder and populate it with [this data](https://github.com/riapacheco/table-demo/blob/main/src/app/data.json) (pulled from Binance's open API)
+1. Create a file called `data.json` in your main `app` folder and populate it with [this data](https://github.com/riapacheco/data-table/blob/main/src/app/data.json) (pulled from Binance's open API)
 2. To enable the app to read the data, add `"resolveJsonModule": true` under `compilerOptions` in your `tsconfig.ts` file like this:
 
 ```json
