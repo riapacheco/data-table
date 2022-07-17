@@ -1,11 +1,39 @@
-**Searchable Table in Angular (No Material) with Useful Directives, JS Methods, SCSS, and Virtual Scrolling**
+If you've taken on the use-case of a searchable or sortable data table in Angular, that avoids the restrictive styles of `@angular/material` by using the `cdkTable` under it, you've probably pulled out your hair as much as I have in frustration.
 
-If you've taken on the use-case of a searchable or sortable data table in Angular, that avoids the restrictive styles of `@angular/material` by using the `cdkTable` under it, you've probably pulled out your hair as much as I have in frustration. So, here's a way to create your own data table in Angular _without_ `MatTable` OR `cdkTable` that's searchable, gorgeous, and can be configured (in terms of _both_ data and style adjustments) from the component itself using some of Angular's most useful lower-level features like `[style]` and virtual scrolling. You can also make it completely reusable by other parent components!
+So, here's a way to create your own data table in Angular _without_ `MatTable` OR `cdkTable` that's searchable, gorgeous, and can be configured (in terms of _both_ data and style adjustments) from the component itself using some of Angular's most useful lower-level features like `[style]` and virtual scrolling. You can also make it completely reusable by other parent components!
 
-> Note: you can add additional sorting capabilities by using JS' `Array.sort()` method; but it won't be covered here. You're likely set to figure it out easily, once you build the data outlined in this article though.
+<small>Note: you can add additional sorting capabilities by using JS' `Array.sort()` method; but it won't be covered here. You're likely set to figure it out easily, once you build the table outlined in this article though.</small>
+
+##### Here's what it will look like:
+![search-friendly table](https://ik.imagekit.io/fuc9k9ckt2b/Blog_Post_Images/Dev_to/tr:q-100/searchFriendlyTable_8l93WzEbf.gif?ik-sdk-version=javascript-1.4.3&updatedAt=1658014718124)
+
+
 ---
 
-[toc]
+### Skip Ahead
+- [Create the App](#create-the-app)
+- [Some Dependency Setup](#some-dependency-setup)
+  - [Utility Classes and Colors with @riapacheco/yutes](#utility-classes-and-colors-with-riapachecoyutes)
+  - [Access Directives with CommonModule](#access-directives-with-commonmodule)
+- [JSON Data Setup](#json-data-setup)
+  - [Generate a Data Table Component](#generate-a-data-table-component)
+    - [@riapacheco/yutes classes](#riapachecoyutes-classes)
+  - [Enable the Consumption of JSON Data](#enable-the-consumption-of-json-data)
+    - [Add a Mock Data File and Access it with TypeScript's resolveJsonModule](#add-a-mock-data-file-and-access-it-with-typescripts-resolvejsonmodule)
+    - [Import to Component via File Path](#import-to-component-via-file-path)
+- [Create and Structure the Table](#create-and-structure-the-table)
+  - [Populating Dynamic Cells](#populating-dynamic-cells)
+- [Responsive Structuring with SCSS](#responsive-structuring-with-scss)
+  - [Fancy Basic Styling](#fancy-basic-styling)
+- [Component-Configurable Columns](#component-configurable-columns)
+  - [Add Flex-Basis Values to the Component](#add-flex-basis-values-to-the-component)
+  - [Bind the Data with style.flex-basis](#bind-the-data-with-styleflex-basis)
+- [Improving Performance with Virtual Scrolling](#improving-performance-with-virtual-scrolling)
+  - [Virtual Scroll Viewport](#virtual-scroll-viewport)
+- [Adding Search Capabilities with a Filter All Pipe](#adding-search-capabilities-with-a-filter-all-pipe)
+  - [Generate New Pipe and Apply Logic](#generate-new-pipe-and-apply-logic)
+  - [Add a Two-Way Bounded Input Field](#add-a-two-way-bounded-input-field)
+- [Result](#result)
 
 ---
 
